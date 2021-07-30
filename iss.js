@@ -35,13 +35,13 @@ const fetchCoordsByIP = function(ip, callback) {
 
     let coords = JSON.parse(body);
     const {longitude, latitude} = coords;
-    callback(null, {longitude, latitude});    
+    callback(null, {longitude, latitude});
 
   });
 };
 
 
- const fetchISSFlyOverTimes = function(coords, callback) {
+const fetchISSFlyOverTimes = function(coords, callback) {
 
   const url = `http://api.open-notify.org/iss-pass.json?lat=${coords.latitude}&lon=${coords.longitude}`;
 
@@ -56,8 +56,8 @@ const fetchCoordsByIP = function(ip, callback) {
       return;
     }
 
-    if(!(coords.latitude <= 90 && coords.latitude >=-90) || !(coords.latitude <=180 && coords.latitude >= -180)) {
-      callback(Error(`Coordinates are not valid`))
+    if (!(coords.latitude <= 90 && coords.latitude >= -90) || !(coords.latitude <= 180 && coords.latitude >= -180)) {
+      callback(Error(`Coordinates are not valid`));
       return;
     }
 
@@ -67,7 +67,28 @@ const fetchCoordsByIP = function(ip, callback) {
   });
 };
 
+const nextISSTimesForMyLocation = function(callback) {
+  fetchMyIP((error, ip) => {
+    if (error) {
+      return callback(error, null);
+    }
+    fetchCoordsByIP(ip, (error, coords) => {
+      if (error) {
+        return callback(error, null);
+      }
+      fetchISSFlyOverTimes(coords, (error, flyOverTimes) => {
+        if (error) {
+          return callback(error, null);
+        }
+        callback(null, flyOverTimes);
+      });
+    });
+  });
+};
 
-module.exports = { fetchMyIP, fetchCoordsByIP, fetchISSFlyOverTimes};
-
-
+module.exports = { 
+  fetchMyIP,
+  fetchCoordsByIP,
+  fetchISSFlyOverTimes,
+  nextISSTimesForMyLocation
+};
